@@ -102,7 +102,8 @@ UI.prototype.defaultToolbar = function defaultToolbar() {
           "f5bc49e8-eb52-455f-8c4b-8470dab081c0",
           "4041227c-8738-4787-af3d-71d196aad257",
           "f1ef211a-562a-4e00-bae2-ca5b471bec16",
-          "3233071a-24fa-4476-a677-19613ffbafed"
+          "3233071a-24fa-4476-a677-19613ffbafed",
+          "b3f73a54-08e7-4071-9f08-3d29c1961333"
           ];
 };
 

@@ -1,0 +1,14 @@
+<div id="listimages">
+	{{#each images}}
+		<div data-imgidentifier="{{this.id}}">
+			<input id='imgpath' type='file' style="display: inline-block;" value="{{this.path}}"/><button type="button" onclick="deleteImage(this)" style="
+    display: inline-block;"">{{gettext "Delete"}}</button>
+		</div>
+	{{/each}}
+</div>
+<div><button id="addimage" type="button">{{gettext "Add image"}}</button></div>
+<script type="text/javascript" charset="utf-8">
+	function deleteImage(button){
+		button.parentElement.remove();
+	}
+</script>

@@ -1,0 +1,10 @@
+{
+	"idtype" : "b3f73a54-08e7-4071-9f08-3d29c1961333",
+	"description":"Append Image Gallery to content",
+	"label": "Image Gallery",
+	"icon" : "icon.png",
+	"version" : "0.2.0",
+	"category": "root",
+	"external_scripts" : ["lib_external/yoxview/yoxview-init.js", "lib_external/yoxview/skins/top_menu/yoxview.top_menu.js"],
+  	"external_css" : ["lib_external/yoxview/yoxview.css", "lib_external/yoxview/skins/top_menu/yoxview.top_menu.css"]
+}
