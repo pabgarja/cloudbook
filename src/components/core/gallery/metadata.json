@@ -5,6 +5,6 @@
 	"icon" : "icon.png",
 	"version" : "0.2.0",
 	"category": "root",
-	"external_scripts" : ["lib_external/yoxview/yoxview-init.js"], 
+	"external_scripts" : ["lib_external/yoxview/yox.js","lib_external/yoxview/jquery.yoxview-2.21.js"], 
   	"external_css" : ["lib_external/yoxview/yoxview.css", "lib_external/yoxview/skins/top_menu/yoxview.top_menu.css"]
 }

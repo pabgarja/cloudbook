@@ -65,9 +65,24 @@ Gallery.prototype.triggerAddEditorView = function triggerAddEditorView(jquerycbo
   Gallery.super_.prototype.triggerAddEditorView.call(this,jquerycbo,objectcbo);
   $(".yoxview-thumbnails").yoxview({
     buttonsFadeTime: 0,
-    renderInfoPin:false
+    renderInfoPin:false,
+    lang: getLanguage(process.env.LANG)
   });
 };
+
+Gallery.prototype.triggerHTMLView = function triggerHTMLView() {
+  return '$(document).ready(function(){ ' +
+  'var yoxlang = (function(){ ' +
+    'var enviromentLang = navigator.language;' +
+    getLanguage.toString() + 
+    'return getLanguage(enviromentLang)' + 
+  '})();'+
+  ' $(".yoxview-thumbnails").yoxview({'+
+          ' buttonsFadeTime: 0, ' +
+          ' renderInfoPin:false ,' + 
+          ' lang: yoxlang });})';
+};
+
 
 Gallery.prototype.clickButton = function clickButton(controllerClass) {
   var that = this;
@@ -219,6 +234,22 @@ function updateImagePath(index, that){
     fsextra.copySync(originalpath,finalpath);
     that.images[index].path = finalpath;
 }
+
+function getLanguage(enviromentLang){
+  if(enviromentLang.indexOf("@") !== -1 ){
+    if(enviromentLang.indexOf("valencia")){
+      return "ca-es-valencia";
+    }
+  }
+  else if(enviromentLang.indexOf("zh") === 0){
+    if(enviromentLang.indexOf("tw")){
+      return "zh-tw"
+    }
+    return "zh-cn";
+  }
+  return enviromentLang.substr(0,2);
+}
+
 
 module.exports = Gallery;
 //@ sourceURL=gallery_core.js

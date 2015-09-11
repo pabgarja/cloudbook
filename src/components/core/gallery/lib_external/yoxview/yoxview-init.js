@@ -1,4 +1,4 @@
-﻿var yoxviewPath = "components/core/gallery/lib_external/yoxview/";//getYoxviewPath();
+﻿var yoxviewPath = getYoxviewPath();
 var cssLink = top.document.createElement("link");
 cssLink.setAttribute("rel", "Stylesheet");
 cssLink.setAttribute("type", "text/css");
@@ -9,16 +9,14 @@ function LoadScript(url)
 {
 	document.write( '<scr' + 'ipt type="text/javascript" src="' + url + '"><\/scr' + 'ipt>' ) ;
 }
-/*
 var jQueryIsLoaded = typeof jQuery != "undefined";
 
 if (!jQueryIsLoaded)
     LoadScript("http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js");
- */   
 LoadScript(yoxviewPath + "yox.js");
 LoadScript(yoxviewPath + "jquery.yoxview-2.21.js");
 
-/*function getYoxviewPath()
+function getYoxviewPath()
 {
     var scripts = document.getElementsByTagName("script");
     var regex = /(.*\/)yoxview-init/i;
@@ -30,6 +28,6 @@ LoadScript(yoxviewPath + "jquery.yoxview-2.21.js");
     }
     
     return null;
-}*/
+}
 // Remove the next line's comment to apply yoxview without knowing jQuery to all containers with class 'yoxview':
 //LoadScript(yoxviewPath + "yoxview-nojquery.js"); 
