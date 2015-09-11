@@ -753,6 +753,31 @@
             if (!popup && imagesCount != 0)
                 createPopup();
 
+            if(images[initialItemIndex+1] != undefined)
+                $.yoxview.selectImage(initialItemIndex+1);
+            else
+            {
+                if(images[initialItemIndex-1] != undefined)
+                    $.yoxview.selectImage(initialItemIndex-1);
+            }
+            if(images.length == 1)
+            {
+                setThumbnail(true);
+                thumbnail.blur();
+
+                panel1.css({
+                    "z-index" : "1",
+                    width : "100%", 
+                    height : "100%"             
+                });
+                panel2.css({
+                    "display" : "none",
+                    "z-index" : "2"
+                });
+                
+                firstImage = true;
+                popup.css(thumbnailProperties);
+            }
             $.yoxview.selectImage(initialItemIndex);
             popupWrap.stop().css({ opacity: 0, display: "block" }).animate({ opacity: 1}, "slow", function(){ popupWrap.css("opacity", "") });
             if(options.cacheImagesInBackground)

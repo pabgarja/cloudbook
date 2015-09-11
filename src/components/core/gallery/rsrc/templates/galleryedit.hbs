@@ -7,6 +7,8 @@
 	{{/each}}
 </div>
 <div><button id="addimage" type="button">{{gettext "Add image"}}</button></div>
+<div class="ErrorCreation" style="display:none"><font color="#FC0202"><strong>{{gettext "There were void images"}}</strong></font></div>
+<div class="ErrorCreation2" style="display:none"><font color="#FC0202"><strong>{{gettext "Minimum 2 images"}}</strong></font></div>
 <script type="text/javascript" charset="utf-8">
 	function deleteImage(button){
 		button.parentElement.remove();

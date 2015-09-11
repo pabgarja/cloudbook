@@ -7,7 +7,7 @@ function Gallery(objectdata){
   objectdata = typeof objectdata !== 'undefined' ? objectdata : {"position" : [200,200],"size":[110,110]};
   objectdata.idtype = metadata['idtype'];
   Gallery.super_.call(this,objectdata);
-  this.images = typeof objectdata.images !== 'undefined' ? objectdata.images : [{"id": 1, "path": "" }] ;
+  this.images = typeof objectdata.images !== 'undefined' ? objectdata.images : [{"id": 1, "path": "" }, {"id": 2, "path": "" }] ;
 }
 
 util.inherits(Gallery,CBobject);
@@ -15,7 +15,7 @@ util.inherits(Gallery,CBobject);
 Gallery.prototype.editorView = function editorView() {
   var aux = Gallery.super_.prototype.editorView.call(this);
   var fs = require('fs');
-  var template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/activityview.hbs',{encoding:'utf8'});
+  var template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/galleryview.hbs',{encoding:'utf8'});
   var templatecompiled = application.util.template.compile(template);
   options={"images":this.images};
   aux.children('.cbcontainer').append($(templatecompiled(options)));
@@ -37,45 +37,42 @@ Gallery.prototype.importHTML = function importHTML(node, filePath){
 
 Gallery.prototype.htmlView = function htmlView() {
   var aux = Gallery.super_.prototype.htmlView.call(this);
-/*  var imagepath = this.imgpath !== null ? "rsrc/"+ this.imgpath : __module_path__ + "default.png";
-  var imagepath = this.imgpath !== null ? this.imgpath : __module_path__ + "default.png";
-  var imgelement = $(window.document.createElement('img')).attr('src', 'rsrc/'+imagepath);
-  imgelement.css('height','100%');
-  imgelement.css('width','100%');*/
-  //aux.children('.cbcontainer').append(imgelement);
+  var fs = require('fs');
+  var template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/galleryview.hbs',{encoding:'utf8'});
+  var templatecompiled = application.util.template.compile(template);
+  options={"images":this.images};
+  aux.children('.cbcontainer').append($(templatecompiled(options)));
+  aux.addClass('gallery');
   return aux;
 }
 
 Gallery.prototype.pdfView = function pdfView() {
-  var aux = Gallery.super_.prototype.pdfView.call(this);
-  var imagepath = this.imgpath !== null ? "rsrc/"+ this.imgpath : __module_path__ + "default.png";
-  var imgelement = $(window.document.createElement('img')).attr('src', imagepath);
-  imgelement.css('height','100%');
-  imgelement.css('width','100%');
-  aux.children('.cbcontainer').append(imgelement);
-  return aux;
+  return this.epubView();
 }
 
 Gallery.prototype.epubView = function epubView() {
   var aux = Gallery.super_.prototype.epubView.call(this);
-  var projectpath=Project.Info.projectpath;
-  var imagepath = this.imgpath !== null ? "file://"+projectpath + "/rsrc/"+ this.imgpath : __module_path__ + "default.png";
-  var imgelement = $(window.document.createElement('img')).attr('src', imagepath);
-  imgelement.css('height','100%');
-  imgelement.css('width','100%');
-  aux.children('.cbcontainer').append(imgelement);
+  var fs = require('fs');
+  var template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/galleryepub.hbs',{encoding:'utf8'});
+  var templatecompiled = application.util.template.compile(template);
+  options={"images":this.images};
+  aux.children('.cbcontainer').append($(templatecompiled(options)));
+  aux.addClass('gallery');
   return aux;
 }
 
 Gallery.prototype.triggerAddEditorView = function triggerAddEditorView(jquerycbo,objectcbo) {
   Gallery.super_.prototype.triggerAddEditorView.call(this,jquerycbo,objectcbo);
-  $(".yoxview").yoxview();
+  $(".yoxview-thumbnails").yoxview({
+    buttonsFadeTime: 0,
+    renderInfoPin:false
+  });
 };
 
 Gallery.prototype.clickButton = function clickButton(controllerClass) {
   var that = this;
   var dialog = $("<div class='imgdialog'><div class='content'></div><footer><div id='savedialog'><button id='save'>"+CBI18n.gettext("Save")+"</button><button id='cancel'>"+CBI18n.gettext("Cancel")+"</button></div></footer></div>");
-  var template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/activityedit.hbs',{encoding:'utf8'});
+  var template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/galleryedit.hbs',{encoding:'utf8'});
   var templatecompiled = application.util.template.compile(template);
   dialog.children(".content").append(templatecompiled({'images':that.images}));
   var images = dialog.find("#listimages");
@@ -93,17 +90,22 @@ Gallery.prototype.clickButton = function clickButton(controllerClass) {
 
  savebutton.click(function(event){
     var images = dialog.find("div[data-imgidentifier]");
-    var voidImage = false;
-
-    for(var i = 0; i < images.length; i++){
-      if($(dialog.find("div[data-imgidentifier]")[i]).children("#imgpath").val() == "")
-        voidImage = true
+    if($(dialog.find("div[data-imgidentifier]")).length <2){
+      dialog.find('.ErrorCreation2').css("display", "inline");
+      dialog.find('.ErrorCreation').css("display", "none");
     }
-    if(!voidImage){
-      updateImages(dialog,that);
-      that.calculateDimensions(that);
-      controllerClass.addCBObjectIntoSelectedSection(that.editorView(),that);
-      dialog.dialog('close')
+    else
+    {
+      dialog.find('.ErrorCreation2').css("display", "none");
+      if(!checkVoidImages(dialog)){
+        updateImages(dialog,that);
+        that.calculateDimensions();
+        controllerClass.addCBObjectIntoSelectedSection(that.editorView(),that);
+        dialog.find('.ErrorCreation').css("display", "none");
+        dialog.dialog('close')
+      }
+      else
+        dialog.find('.ErrorCreation').css("display", "inline");
     }
  });
 
@@ -116,9 +118,9 @@ dialog.dialog({dialogClass: "cbdialog",
   modal:true,close:function(){$(this).remove()}});
 };
 
-Gallery.prototype.calculateDimensions = function calculateDimensions(that) {
-  var newWidth = (that.images.length >= 3)? 330: that.images.length * 110;
-  var newHeight = Math.ceil(that.images.length / 3) * 110;
+Gallery.prototype.calculateDimensions = function calculateDimensions() {
+  var newWidth = (this.images.length >= 3)? 330: this.images.length * 110;
+  var newHeight = Math.ceil(this.images.length / 3) * 110;
   this.size=[newWidth,newHeight];
 };
 
@@ -126,14 +128,15 @@ Gallery.prototype.editButton = function editButton(e) {
   var that = e.data.that;
   var dialog = Gallery.super_.prototype.editButton.call(this,e);
   dialog.dialog('option','width',500);
-  var template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/activityedit.hbs',{encoding:'utf8'});
+  var template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/galleryedit.hbs',{encoding:'utf8'});
   var templatecompiled = application.util.template.compile(template);
   dialog.children(".content").append(templatecompiled({'images':that.images}));
+  dialog.find("#save").unbind("click");
   var images = dialog.find("#listimages");
   var addbutton = dialog.find("#addimage");
   var gallerytemplate =  '<div data-imgidentifier="{{this.id}}"><input id="imgpath" type="file" style="display: inline-block;"/><button type="button" onclick="deleteImage(this)" style="display: inline-block;">{{gettext "Delete"}}</button></div>';
   var gallerytemplatecompiled = application.util.template.compile(gallerytemplate);
-  var savebutton = dialog.find("#save");
+  var savebutton = dialog.find("#saveButton");
   var cancelbutton = dialog.find("#cancel");
 
   addbutton.click(function(event) {
@@ -142,17 +145,48 @@ Gallery.prototype.editButton = function editButton(e) {
     last.children().length == 0?$("#listimages").append(gallerytemplatecompiled({'id':identifier})):last.after(gallerytemplatecompiled({'id':identifier}));
   });
 
-  savebutton.click(function(event){
-      updateImages(dialog,that);
-      that.calculateDimensions(that);
+  dialog.find("#save").click(function(event){
+    if($(dialog.find("div[data-imgidentifier]")).length <2){
+      dialog.find('.ErrorCreation2').css("display", "inline");
+      dialog.find('.ErrorCreation').css("display", "none");
+    }
+    else
+    {
+      dialog.find('.ErrorCreation2').css("display", "none");
+      if(!checkVoidImages(dialog)){
+        updateImages(dialog,that);
+        that.calculateDimensions();
+        $('[data-cbobjectid="' + that.uniqueid + '"]').width(that.size[0]);
+        $('[data-cbobjectid="' + that.uniqueid + '"]').height(that.size[1]);
+         dialog.find('.ErrorCreation').css("display", "none");
+         var viewobject = $("[data-cbobjectid='"+that.uniqueid+"']");
+         viewobject.replaceWith(that.editorView());
+         that.triggerAddEditorView($("[data-cbobjectid='"+that.uniqueid+"']"),that);
+         var CBStorage = application.storagemanager.getInstance();
+         CBStorage.setCBObjectById(that,that.uniqueid);
+         dialog.remove() ;
+         $('#savedialog').dialog('destroy');
+         $(".cbtextbox-toolbar").remove();
+         $('body').click({that:that},that.disableEditMode);
+      }
+      else
+        dialog.find('.ErrorCreation').css("display", "inline");
+    }
   });
-
-  cancelbutton.click(function(event){
-    dialog.dialog('close');
-  });
-  dialog.callbacks.push(function(){updateImages(dialog,that);});
 };
- 
+
+function checkVoidImages(dialogElement)
+{
+  var voidImage = false;
+
+    for(var i = 0; i < $(dialogElement.find("div[data-imgidentifier]")).length; i++){
+      if(($(dialogElement.find("div[data-imgidentifier]")[i]).children("#imgpath").val() == "") && 
+        ($(dialogElement.find("div[data-imgidentifier]")[i]).children("#imgpath").attr("value") == "" || $(dialogElement.find("div[data-imgidentifier]")[i]).children("#imgpath").attr("value") == undefined))
+        voidImage = true
+    }
+    return voidImage;
+} 
+
 function updateImages(dialog,objectcbo){
   objectcbo.images = [];
   var images = dialog.find("div[data-imgidentifier]");
