@@ -4,8 +4,13 @@ var CBobject = CBUtil.req("js/lib/core/components/cbobject.js");
 var metadata = require( "./"+__module_path__ + 'metadata.json');
 
 function Gallery(objectdata){
-  objectdata = typeof objectdata !== 'undefined' ? objectdata : {"position" : [200,200],"size":[110,110]};
-  objectdata.idtype = metadata['idtype'];
+  var defaultValues = {
+        idtype : metadata['idtype'],
+        position : [200,200],
+        size:[110,110]
+      };
+
+  objectdata = $.extend({},defaultValues,objectdata);
   Gallery.super_.call(this,objectdata);
   this.images = typeof objectdata.images !== 'undefined' ? objectdata.images : [{"id": 1, "path": "" }, {"id": 2, "path": "" }] ;
 }
@@ -14,20 +19,17 @@ util.inherits(Gallery,CBobject);
 
 Gallery.prototype.editorView = function editorView() {
   var aux = Gallery.super_.prototype.editorView.call(this);
-  var fs = require('fs');
-  var template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/galleryview.hbs',{encoding:'utf8'});
-  var templatecompiled = application.util.template.compile(template);
-  options={"images":this.images};
-  aux.children('.cbcontainer').append($(templatecompiled(options)));
-  aux.addClass('gallery');
+  aux = this.appendTemplate(aux, 'rsrc/templates/galleryview.hbs');
   return aux;
 };
 
 Gallery.prototype.HTMLtags = function HTMLtags(node){
-  var tagTypes = ['GALLERY'];
-  var score = 0;
+  var tagTypes = ['GALLERY'],
+      score = 0;
+
   if(tagTypes.indexOf(node.tagName) > -1)
     score ++;
+
   return score;
 }
 
@@ -37,13 +39,20 @@ Gallery.prototype.importHTML = function importHTML(node, filePath){
 
 Gallery.prototype.htmlView = function htmlView() {
   var aux = Gallery.super_.prototype.htmlView.call(this);
-  var fs = require('fs');
-  var template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/galleryview.hbs',{encoding:'utf8'});
-  var templatecompiled = application.util.template.compile(template);
-  options={"images":this.images};
-  aux.children('.cbcontainer').append($(templatecompiled(options)));
-  aux.addClass('gallery');
+  aux = this.appendTemplate(aux, 'rsrc/templates/galleryview.hbs');
   return aux;
+}
+
+Gallery.prototype.appendTemplate = function appendTemplate(element, templateName) {
+  var fs = require('fs'),
+      template = fs.readFileSync("./"+__module_path__ + templateName,{encoding:'utf8'}),
+      templatecompiled = application.util.template.compile(template), 
+      options={"images":this.images};
+
+    element.children('.cbcontainer').append($(templatecompiled(options)));
+    element.addClass('gallery');
+
+    return element;
 }
 
 Gallery.prototype.pdfView = function pdfView() {
@@ -52,12 +61,7 @@ Gallery.prototype.pdfView = function pdfView() {
 
 Gallery.prototype.epubView = function epubView() {
   var aux = Gallery.super_.prototype.epubView.call(this);
-  var fs = require('fs');
-  var template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/galleryepub.hbs',{encoding:'utf8'});
-  var templatecompiled = application.util.template.compile(template);
-  options={"images":this.images};
-  aux.children('.cbcontainer').append($(templatecompiled(options)));
-  aux.addClass('gallery');
+  aux = this.appendTemplate(aux, 'rsrc/templates/galleryepub.hbs');
   return aux;
 }
 
@@ -85,9 +89,9 @@ Gallery.prototype.triggerHTMLView = function triggerHTMLView() {
 
 
 Gallery.prototype.clickButton = function clickButton(controllerClass) {
-  var that = this;
-  var dialog = $("<div class='imgdialog'><div class='content'></div><footer><div id='savedialog'><button id='save'>"+CBI18n.gettext("Save")+"</button><button id='cancel'>"+CBI18n.gettext("Cancel")+"</button></div></footer></div>");
-  var template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/galleryedit.hbs',{encoding:'utf8'});
+  var that = this,
+  dialog = $("<div class='imgdialog'><div class='content'></div><footer><div id='savedialog'><button id='save'>"+CBI18n.gettext("Save")+"</button><button id='cancel'>"+CBI18n.gettext("Cancel")+"</button></div></footer></div>"),
+  template = fs.readFileSync("./"+__module_path__ + 'rsrc/templates/galleryedit.hbs',{encoding:'utf8'});
   var templatecompiled = application.util.template.compile(template);
   dialog.children(".content").append(templatecompiled({'images':that.images}));
   var images = dialog.find("#listimages");
@@ -215,12 +219,13 @@ function updateImages(dialog,objectcbo){
 }
 
 function updateImagePath(index, that){
-    var fs = window.require('fs');
-    var fsextra = window.require('fs-extra');
-    var path = window.require('path');
-    var originalpath = that.images[index].path;
-    var originalbasename = path.basename(originalpath);
-    var finalpath = Project.Info.projectpath +"/rsrc/"+originalbasename;
+    var fs = window.require('fs'),
+        fsextra = window.require('fs-extra'),
+        path = window.require('path'),
+        originalpath = that.images[index].path,
+        originalbasename = path.basename(originalpath),
+        finalpath = Project.Info.projectpath +"/rsrc/"+originalbasename;
+
     while(true){
       try{
         fs.accessSync(finalpath);
